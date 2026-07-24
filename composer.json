@@ -1,12 +1,12 @@
 {
-    "name": "espocrm/ext-{@nameHyphen}",
+    "name": "espocrm/ext-inline-list-edit",
     "require": {
         "php": ">=8.3"
     },
     "autoload-dev": {
         "psr-4": {
-            "Espo\\Modules\\{@name}\\": "src/files/custom/Espo/Modules/{@name}",
-            "tests\\unit\\Espo\\Modules\\{@name}\\": "tests/unit/Espo/Modules/{@name}"
+            "Espo\\Modules\\InlineListEdit\\": "src/files/custom/Espo/Modules/InlineListEdit",
+            "tests\\unit\\Espo\\Modules\\InlineListEdit\\": "tests/unit/Espo/Modules/InlineListEdit"
         }
     },
     "require-dev": {
