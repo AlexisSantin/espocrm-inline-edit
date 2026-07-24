@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repository_path="$(git rev-parse --show-toplevel)"
+working_path="$(pwd -P)"
+
+exec docker run --rm \
+    --network inline-list-edit-dev_development \
+    --user "$(id -u):$(id -g)" \
+    --group-add 33 \
+    --volume inline-list-edit-dev_php-tmp:/tmp \
+    --volume "$repository_path:$repository_path" \
+    --workdir "$working_path" \
+    --entrypoint php \
+    espocrm/espocrm:latest \
+    "$@"
