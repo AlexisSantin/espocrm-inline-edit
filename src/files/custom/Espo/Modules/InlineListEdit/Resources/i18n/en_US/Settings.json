@@ -1,0 +1,15 @@
+{
+    "labels": {
+        "Activation": "Activation"
+    },
+    "fields": {
+        "inlineListEditEnabled": "Enable inline list editing",
+        "inlineListEditAllEntities": "Enable for all entities",
+        "inlineListEditEntityList": "Enabled entities"
+    },
+    "tooltips": {
+        "inlineListEditEnabled": "Globally enables or disables Inline List Edit.",
+        "inlineListEditAllEntities": "Makes inline editing available for every compatible entity.",
+        "inlineListEditEntityList": "Entities where inline editing is available when the all-entities option is disabled."
+    }
+}

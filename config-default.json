@@ -4,19 +4,19 @@
         "branch": "stable"
     },
     "database": {
-        "host": "localhost",
-        "port": null,
+        "host": "172.28.0.10",
+        "port": 3306,
         "charset": "utf8mb4",
-        "dbname": "ext-{@nameHyphen}",
-        "user": "root",
-        "password": "",
+        "dbname": "espocrm_inline_list_edit",
+        "user": "espocrm",
+        "password": "espocrm_dev",
         "platform": "Mysql"
     },
     "install": {
-        "language": "en_US",
+        "language": "fr_FR",
         "defaultOwner": "www-data",
         "defaultGroup": "www-data",
-        "siteUrl": "http://localhost/ext-{@nameHyphen}/site",
+        "siteUrl": "http://localhost:8080",
         "adminUsername": "admin",
         "adminPassword": "1"
     }

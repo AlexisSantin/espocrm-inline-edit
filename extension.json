@@ -1,9 +1,9 @@
 {
-    "module": "{@name}",
-    "name": "{@nameLabel}",
-    "description": "{@description}",
-    "author": "{@author}",
-    "bundled": {@bundled},
+    "module": "InlineListEdit",
+    "name": "Inline List Edit",
+    "description": "Modification rapide des champs depuis les vues liste EspoCRM.",
+    "author": "Alex Santin",
+    "bundled": true,
     "acceptableVersions": [
         ">=9.3.0"
     ],

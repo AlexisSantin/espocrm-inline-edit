@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repository_path="$(git rev-parse --show-toplevel)"
+working_path="$(pwd -P)"
+
+exec docker run --rm \
+    --network inline-list-edit-dev_development \
+    --user "$(id -u):$(id -g)" \
+    --group-add 33 \
+    --env HOME=/tmp \
+    --env COMPOSER_HOME=/tmp/composer \
+    --volume inline-list-edit-dev_php-tmp:/tmp \
+    --volume "$repository_path:$repository_path" \
+    --volume /usr/local/bin/composer:/tmp/composer.phar:ro \
+    --workdir "$working_path" \
+    --entrypoint php \
+    espocrm/espocrm:latest \
+    /tmp/composer.phar "$@"
