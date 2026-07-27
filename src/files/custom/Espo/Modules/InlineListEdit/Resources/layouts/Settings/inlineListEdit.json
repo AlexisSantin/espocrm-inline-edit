@@ -1,0 +1,25 @@
+[
+    {
+        "label": "Activation",
+        "rows": [
+            [
+                {
+                    "name": "inlineListEditEnabled"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "inlineListEditAllEntities"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "inlineListEditEntityList"
+                },
+                false
+            ]
+        ]
+    }
+]

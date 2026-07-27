@@ -1,0 +1,20 @@
+{
+    "fields": {
+        "inlineListEditEnabled": {
+            "type": "bool",
+            "default": true,
+            "tooltip": true
+        },
+        "inlineListEditAllEntities": {
+            "type": "bool",
+            "default": true,
+            "tooltip": true
+        },
+        "inlineListEditEntityList": {
+            "type": "multiEnum",
+            "translation": "Global.scopeNamesPlural",
+            "view": "inline-list-edit:views/fields/entity-list",
+            "tooltip": true
+        }
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "customization": {
+        "itemList": [
+            "__APPEND__",
+            {
+                "url": "#Admin/inlineListEdit",
+                "label": "Inline List Edit",
+                "iconClass": "fas fa-edit",
+                "description": "inlineListEdit",
+                "recordView": "inline-list-edit:views/admin/settings"
+            }
+        ]
+    }
+}

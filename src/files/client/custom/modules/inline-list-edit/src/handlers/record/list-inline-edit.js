@@ -1,11 +1,29 @@
 import BaseFieldView from 'views/fields/base';
+import $ from 'jquery';
+import InlineEditorSizing from
+    'inline-list-edit:utils/inline-editor-sizing';
+import isInlineEditEnabledForEntity from
+    'inline-list-edit:utils/configuration';
+import InlineEditCoordinator from
+    'inline-list-edit:utils/inline-edit-coordinator';
+import {
+    closeInListMode,
+    rememberListMode,
+} from 'inline-list-edit:utils/list-mode';
+import shouldActivateCell from
+    'inline-list-edit:utils/cell-activation';
+import bindRelationEditActions from
+    'inline-list-edit:utils/relation-edit-actions';
+import scheduleFieldInitialization from
+    'inline-list-edit:utils/field-initialization';
+import saveInlineEditIfChanged from
+    'inline-list-edit:utils/field-change';
 
 /**
  * Enables EspoCRM's native field inline-edit mode in record lists.
  *
- * The list still uses the standard EspoCRM field views. Switching them from
- * `list` to `detail` mode makes the native pencil, validation and PATCH save
- * workflow available without duplicating field-specific editors.
+ * Fields keep their native `list` or `listLink` rendering. Only the temporary
+ * edit mode, validation and PATCH save workflow are reused.
  */
 export default class ListInlineEditSetupHandler {
 
@@ -20,6 +38,10 @@ export default class ListInlineEditSetupHandler {
             !entityType ||
             this.view.selectable ||
             this.view._inlineListEditEnabled ||
+            !isInlineEditEnabledForEntity(
+                this.view.getConfig(),
+                entityType
+            ) ||
             !this.view.getAcl().checkScope(entityType, 'edit')
         ) {
             return;
@@ -46,39 +68,15 @@ export default class ListInlineEditSetupHandler {
         }
 
         const getCell = prototype.get$cell;
+        const setupFinal = prototype.setupFinal;
         const initInlineEdit = prototype.initInlineEdit;
+        const inlineEdit = prototype.inlineEdit;
+        const inlineEditClose = prototype.inlineEditClose;
+        const inlineEditSave = prototype.inlineEditSave;
         const addInlineEditLinks = prototype.addInlineEditLinks;
         const removeInlineEditLinks = prototype.removeInlineEditLinks;
-        const getDesiredPopoverWidth = editor => {
-            const controlList = Array.from(
-                editor.querySelectorAll(
-                    'input:not([type="hidden"]), select, textarea, ' +
-                    'button, [contenteditable="true"]'
-                )
-            ).filter(control => {
-                if (control.classList.contains('hidden')) {
-                    return false;
-                }
-
-                return !(
-                    control.tagName === 'SELECT' &&
-                    control.classList.contains('selectized')
-                );
-            });
-
-            if (
-                editor.querySelector('textarea, [contenteditable="true"]') ||
-                controlList.length >= 3
-            ) {
-                return 480;
-            }
-
-            if (controlList.length === 2) {
-                return 400;
-            }
-
-            return 320;
-        };
+        const sizing = new InlineEditorSizing();
+        const coordinator = new InlineEditCoordinator();
 
         prototype.get$cell = function () {
             if (this.$el?.is('td.cell')) {
@@ -88,21 +86,134 @@ export default class ListInlineEditSetupHandler {
             return getCell.call(this);
         };
 
+        prototype.inlineEdit = function () {
+            if (!this.$el?.is('td.cell')) {
+                return inlineEdit.call(this);
+            }
+
+            rememberListMode(this);
+
+            return coordinator.open(
+                this,
+                () => inlineEdit.call(this)
+            );
+        };
+
+        prototype.inlineEditClose = async function (...args) {
+            const result =
+                this.$el?.is('td.cell') &&
+                this.options?.inlineListEditEnabled ?
+                    await closeInListMode(
+                        this,
+                        () => inlineEditClose.apply(this, args)
+                    ) :
+                    await inlineEditClose.apply(this, args);
+
+            coordinator.release(this);
+
+            return result;
+        };
+
+        prototype.inlineEditSave = function (...args) {
+            if (
+                !this.$el?.is('td.cell') ||
+                !this.options?.inlineListEditEnabled
+            ) {
+                return inlineEditSave.apply(this, args);
+            }
+
+            return saveInlineEditIfChanged(
+                this,
+                () => inlineEditSave.apply(this, args)
+            );
+        };
+
+        prototype.setupFinal = function (...args) {
+            const result = setupFinal.apply(this, args);
+
+            scheduleFieldInitialization(this);
+
+            return result;
+        };
+
         prototype.initInlineEdit = function () {
             if (!this.$el?.is('td.cell')) {
                 return initInlineEdit.call(this);
             }
 
-            const renderEditLink = () => {
+            const restoreInlineControls = () => {
                 const cell = this.$el.get(0);
 
+                if (!cell) {
+                    return;
+                }
+
                 if (
-                    !cell ||
-                    !this.isDetailMode() ||
-                    this.disabled ||
-                    this.readOnly ||
-                    cell.querySelector(':scope > .inline-edit-link')
+                    this._inlineListEditActivationCell !== cell
                 ) {
+                    this._inlineListEditActivationCell
+                        ?.removeEventListener(
+                            'click',
+                            this._inlineListEditActivationHandler
+                        );
+
+                    this._inlineListEditActivationHandler = event => {
+                        if (
+                            !shouldActivateCell(
+                                this,
+                                event,
+                                cell
+                            )
+                        ) {
+                            return;
+                        }
+
+                        event.preventDefault();
+                        event.stopPropagation();
+                        this.inlineEdit();
+                    };
+                    this._inlineListEditActivationCell = cell;
+
+                    cell.addEventListener(
+                        'click',
+                        this._inlineListEditActivationHandler
+                    );
+                }
+
+                cell.classList.toggle(
+                    'inline-list-edit-cell-enabled',
+                    this.isReadMode() &&
+                        !this.disabled &&
+                        !this.readOnly
+                );
+
+                if (this._isInlineEditMode && this.isEditMode()) {
+                    if (
+                        !cell.querySelector(
+                            ':scope > .inline-save-link'
+                        )
+                    ) {
+                        this.addInlineEditLinks();
+                    }
+
+                    return;
+                }
+
+                if (
+                    !this.isReadMode() ||
+                    this.disabled ||
+                    this.readOnly
+                ) {
+                    return;
+                }
+
+                const existingEdit = cell.querySelector(
+                    ':scope > .inline-edit-link'
+                );
+
+                if (existingEdit) {
+                    existingEdit.classList.remove('hidden');
+
                     return;
                 }
 
@@ -128,8 +239,18 @@ export default class ListInlineEditSetupHandler {
                 cell.prepend(edit);
             };
 
-            renderEditLink();
-            this.on('after:render', renderEditLink);
+            this._inlineListEditRestoreControls =
+                restoreInlineControls;
+            restoreInlineControls();
+            this.on('after:render', restoreInlineControls);
+            this.once('remove', () => {
+                this._inlineListEditActivationCell
+                    ?.removeEventListener(
+                        'click',
+                        this._inlineListEditActivationHandler
+                    );
+                coordinator.release(this);
+            });
         };
 
         prototype.addInlineEditLinks = function () {
@@ -143,6 +264,16 @@ export default class ListInlineEditSetupHandler {
                 return addInlineEditLinks.call(this);
             }
 
+            if (
+                cell.querySelector(':scope > .inline-save-link') &&
+                cell.querySelector(':scope > .inline-cancel-link')
+            ) {
+                return;
+            }
+
+            this._inlineListEditContentObserver?.disconnect();
+            this._inlineListEditAutocompleteObserver?.disconnect();
+
             const editor = document.createElement('div');
 
             editor.classList.add('inline-list-edit-editor');
@@ -151,10 +282,35 @@ export default class ListInlineEditSetupHandler {
                 editor.append(cell.firstChild);
             }
 
-            const cellRect = cell.getBoundingClientRect();
-            const desiredPopoverWidth = getDesiredPopoverWidth(editor);
+            cell.append(editor);
+            cell.classList.add('inline-list-edit-active');
 
-            if (cellRect.width < desiredPopoverWidth) {
+            const updatePopoverWidth = () => {
+                const cellRect = cell.getBoundingClientRect();
+                const desiredPopoverWidth =
+                    sizing.getDesiredPopoverWidth(editor);
+                const requiresFloatingLayout =
+                    sizing.isRelationEditor(editor);
+
+                editor.classList.remove(
+                    'inline-list-edit-editor--popover',
+                    'inline-list-edit-editor--align-end'
+                );
+                cell.classList.remove(
+                    'inline-list-edit-popover',
+                    'inline-list-edit-popover--align-end'
+                );
+                cell.style.removeProperty(
+                    '--inline-list-edit-popover-width'
+                );
+
+                if (
+                    cellRect.width >= desiredPopoverWidth &&
+                    !requiresFloatingLayout
+                ) {
+                    return;
+                }
+
                 const availableWidthAtStart =
                     window.innerWidth - cellRect.left - 12;
                 const availableWidthAtEnd =
@@ -186,15 +342,71 @@ export default class ListInlineEditSetupHandler {
                     '--inline-list-edit-popover-width',
                     `${Math.floor(popoverWidth)}px`
                 );
-            }
+            };
 
-            cell.append(editor);
-            cell.classList.add('inline-list-edit-active');
+            updatePopoverWidth();
 
             addInlineEditLinks.call(this);
+            bindRelationEditActions(this, editor);
+
+            const relationInput =
+                editor.querySelector('input.main-element');
+            this._inlineListEditContentObserver =
+                new MutationObserver(updatePopoverWidth);
+            this._inlineListEditContentObserver.observe(
+                editor,
+                {
+                    childList: true,
+                    characterData: true,
+                    subtree: true,
+                }
+            );
+
+            if (relationInput) {
+                const autocomplete =
+                    $(relationInput).data('autocomplete');
+                const autocompleteContainer =
+                    autocomplete?.$container?.get(0);
+
+                if (autocompleteContainer) {
+                    const updateAutocompleteWidth = () => {
+                        const {left, width} =
+                            sizing.getAutocompleteLayout(
+                                relationInput,
+                                autocompleteContainer
+                            );
+
+                        autocompleteContainer.classList.add(
+                            'inline-list-edit-autocomplete'
+                        );
+                        autocompleteContainer.style.setProperty(
+                            '--inline-list-edit-autocomplete-width',
+                            `${width}px`
+                        );
+                        autocompleteContainer.style.left =
+                            `${left}px`;
+                    };
+
+                    this._inlineListEditAutocompleteObserver =
+                        new MutationObserver(updateAutocompleteWidth);
+                    this._inlineListEditAutocompleteObserver.observe(
+                        autocompleteContainer,
+                        {
+                            childList: true,
+                            characterData: true,
+                            subtree: true,
+                        }
+                    );
+                }
+            }
         };
 
         prototype.removeInlineEditLinks = function () {
+            this._inlineListEditContentObserver?.disconnect();
+            this._inlineListEditAutocompleteObserver?.disconnect();
+            this._inlineListEditContentObserver = null;
+            this._inlineListEditAutocompleteObserver = null;
+
             removeInlineEditLinks.call(this);
 
             if (this.$el?.is('td.cell')) {
@@ -205,6 +417,7 @@ export default class ListInlineEditSetupHandler {
                     'inline-list-edit-popover--align-end'
                 );
                 cell?.style.removeProperty('--inline-list-edit-popover-width');
+                this._inlineListEditRestoreControls?.();
             }
         };
 
@@ -243,7 +456,7 @@ export default class ListInlineEditSetupHandler {
                 return;
             }
 
-            item.options.mode = 'detail';
+            item.options.inlineListEditEnabled = true;
         });
     }
 
