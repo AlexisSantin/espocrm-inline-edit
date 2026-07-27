@@ -28,6 +28,7 @@ import scheduleFieldInitialization from
     '../files/client/custom/modules/inline-list-edit/src/utils/field-initialization.js';
 import saveInlineEditIfChanged, {
     hasInlineEditChanges,
+    synchronizePipelineStage,
 } from '../files/client/custom/modules/inline-list-edit/src/utils/field-change.js';
 
 globalThis.document = {
@@ -94,13 +95,25 @@ test('inline editing restores Espo listLink mode and its native record link', as
 
 test('only empty cell space activates editing while native content stays untouched', () => {
     const textNode = {
+        childNodes: [],
         nodeType: 3,
         textContent: 'Prospect numéro 1',
     };
-    const cell = {
+    const textContainer = {
         childNodes: [textNode],
+        nodeType: 1,
     };
-    const link = {};
+    const cell = {
+        childNodes: [textContainer],
+        contains: target => [
+            textContainer,
+            textNode,
+            link,
+        ].includes(target),
+    };
+    const link = {
+        closest: () => link,
+    };
     const view = {
         _isInlineEditMode: false,
         disabled: false,
@@ -145,6 +158,28 @@ test('only empty cell space activates editing while native content stays untouch
         shouldActivateCell(
             view,
             {...click, clientX: 50},
+            cell,
+            createRange
+        ),
+        false
+    );
+    assert.equal(
+        shouldActivateCell(
+            view,
+            {...click, target: textContainer},
+            cell,
+            createRange
+        ),
+        true
+    );
+    assert.equal(
+        shouldActivateCell(
+            view,
+            {
+                ...click,
+                clientX: 50,
+                target: textContainer,
+            },
             cell,
             createRange
         ),
@@ -331,6 +366,72 @@ test('unchanged fields close silently without invoking a save', async () => {
     assert.equal(view.fetchCount, 2);
     assert.equal(view.closeCount, 1);
     assert.equal(saveCount, 1);
+});
+
+test('pipeline changes select the first valid stage before saving', () => {
+    const eventList = [];
+    const listenerHash = {};
+    const view = {
+        initialAttributes: {
+            pipelineId: 'pipeline-old',
+            pipelineName: 'Ancien pipeline',
+            pipelineStageId: 'stage-old',
+            pipelineStageName: 'Ancienne étape',
+        },
+        model: {
+            attributes: {
+                pipelineId: 'pipeline-old',
+                pipelineName: 'Ancien pipeline',
+                pipelineStageId: 'stage-old',
+                pipelineStageName: 'Ancienne étape',
+            },
+            setMultiple(attributes) {
+                Object.assign(this.attributes, attributes);
+            },
+            once(eventName, callback) {
+                listenerHash[eventName] = callback;
+            },
+            trigger(eventName) {
+                eventList.push(eventName);
+            },
+        },
+        name: 'pipeline',
+        pipelines: [{
+            id: 'pipeline-new',
+            stages: [{
+                id: 'stage-new',
+                name: 'Nouvelle étape',
+            }],
+        }],
+        fetchToModel() {
+            this.model.setMultiple({
+                pipelineId: 'pipeline-new',
+                pipelineName: 'Nouveau pipeline',
+            });
+        },
+    };
+    let saveCount = 0;
+
+    saveInlineEditIfChanged(view, () => saveCount++);
+
+    assert.equal(saveCount, 1);
+    assert.equal(
+        view.model.attributes.pipelineStageId,
+        'stage-new'
+    );
+    assert.equal(
+        view.model.attributes.pipelineStageName,
+        'Nouvelle étape'
+    );
+    assert.deepEqual(eventList, []);
+
+    listenerHash.sync();
+
+    assert.deepEqual(eventList, ['pipeline-changed']);
+    assert.equal(synchronizePipelineStage({
+        ...view,
+        name: 'status',
+    }), false);
 });
 
 test('text fields grow with their content without becoming oversized', () => {

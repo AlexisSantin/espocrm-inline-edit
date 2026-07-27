@@ -1,6 +1,6 @@
 {
   "name": "espocrm-ext-inline-list-edit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Modification rapide des champs depuis les vues liste EspoCRM",
   "scripts": {
     "sa": "export PATH=\"$PWD/docker-bin:$PATH\"; vendor/bin/phpstan",
