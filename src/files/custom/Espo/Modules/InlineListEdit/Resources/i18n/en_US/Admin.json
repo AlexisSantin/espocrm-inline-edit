@@ -1,0 +1,11 @@
+{
+    "labels": {
+        "Inline List Edit": "Inline List Edit"
+    },
+    "descriptions": {
+        "inlineListEdit": "Choose where inline editing is available in record lists."
+    },
+    "keywords": {
+        "inlineListEdit": "inline,list,edit,entity,configuration"
+    }
+}

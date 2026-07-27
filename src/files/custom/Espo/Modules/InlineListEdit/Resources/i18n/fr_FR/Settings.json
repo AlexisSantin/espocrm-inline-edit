@@ -1,0 +1,15 @@
+{
+    "labels": {
+        "Activation": "Activation"
+    },
+    "fields": {
+        "inlineListEditEnabled": "Activer l’édition en ligne",
+        "inlineListEditAllEntities": "Activer pour toutes les entités",
+        "inlineListEditEntityList": "Entités activées"
+    },
+    "tooltips": {
+        "inlineListEditEnabled": "Active ou désactive globalement Inline List Edit.",
+        "inlineListEditAllEntities": "Rend l’édition en ligne disponible pour toutes les entités compatibles.",
+        "inlineListEditEntityList": "Entités pour lesquelles l’édition en ligne est disponible lorsque l’option toutes les entités est désactivée."
+    }
+}
