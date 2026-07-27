@@ -1,400 +1,284 @@
-# Template repository for EspoCRM extensions
+# Inline List Edit for EspoCRM
 
-Create a repository for your extension from this template.
+Inline List Edit adds fast, focused field editing directly to EspoCRM list
+views. It keeps EspoCRM's native navigation, validation and permissions while
+reducing the need to open a full record form for small updates.
 
-(rename the header after initialization and change the text of the paragraph)
+Current version: **0.1.2**
 
-## Preparing repository
+## Features
 
-(remove this section after initialization)
+### Edit from a list view
 
-Run:
+- Hovering an editable cell displays a subtle outline and an edit button.
+- Clicking the edit button opens the field editor.
+- Clicking unused space inside a cell also opens the editor.
+- Clicking existing content keeps EspoCRM's native behavior. Links still open
+  their record, email links remain email links, and other native actions keep
+  priority.
+- Only one field can be edited at a time.
 
+### Focused editing workflow
+
+- While a field is open, edit buttons and hover outlines are hidden from the
+  other cells.
+- Clicking outside the editor validates and saves the current value.
+- The same click does not immediately open another editor. Click the next cell
+  again when ready to edit it.
+- The blue check button validates and saves.
+- The cancel button discards the current change.
+- Opening and closing a field without changing its value does not send an
+  unnecessary save request or display a misleading “Saved” notification.
+
+### Adaptive editors
+
+Editors are measured from their content and allowed to extend beyond narrow
+table columns without changing the row height.
+
+The sizing logic handles:
+
+- short and long text;
+- text areas and descriptions;
+- names and other composite fields;
+- enums and multi-enums;
+- checkboxes;
+- email addresses;
+- phone numbers;
+- links and parent links;
+- link-multiple fields;
+- Teams and Assigned Users;
+- autocomplete results and relation selectors.
+
+Dropdowns account for their longest available option, not only the currently
+selected value. Relation selectors also account for selected and suggested
+record names. Editors remain constrained to the available viewport.
+
+### Pipeline-aware updates
+
+When a Pipeline is changed inline, the extension mirrors EspoCRM's full edit
+form and assigns the first valid stage of the new pipeline. This prevents a
+stage from the previous pipeline being submitted with the new pipeline.
+
+### EspoCRM-native behavior
+
+Inline List Edit uses EspoCRM's native field views and save flow. This means
+that required fields, field validators, relation selectors, custom field
+views and server-side business rules continue to apply.
+
+## Permissions and ACL
+
+The extension does not grant additional access.
+
+Before displaying an edit control, it checks:
+
+- whether the user can edit the entity type;
+- whether the user can edit the specific record;
+- field-level forbidden lists from the user's role;
+- read-only and disabled fields;
+- locked records.
+
+Every update is then sent through EspoCRM's native record API. Server-side ACL,
+field validation and business rules remain authoritative even if a frontend
+request is crafted manually.
+
+## Administration
+
+After installation, open:
+
+**Administration → Customization → Inline List Edit**
+
+The page provides three settings:
+
+- **Enable inline list editing** — global on/off switch.
+- **Enable for all entities** — enables the extension for every compatible
+  entity.
+- **Enabled entities** — when the previous option is disabled, selects exactly
+  which entities can use inline editing.
+
+The entity selector lists enabled EspoCRM object entities and supports both
+standard and custom entities.
+
+The extension is enabled for all compatible entities after a first
+installation. Administrators can immediately restrict it to a selected list.
+
+## Installation
+
+1. Download `inline-list-edit-0.1.2.zip` from the
+   [latest GitHub release](https://github.com/AlexisSantin/espocrm-extension/releases/latest).
+2. In EspoCRM, open **Administration → Extensions**.
+3. Upload the ZIP file.
+4. Install the extension.
+5. Reload EspoCRM in the browser.
+6. Configure the enabled entities under
+   **Administration → Customization → Inline List Edit**.
+
+Do not unzip the package before uploading it to EspoCRM.
+
+### Upgrade
+
+Download the newer ZIP and install it from **Administration → Extensions**.
+Existing Inline List Edit settings are preserved.
+
+### Uninstall
+
+Uninstall the extension from **Administration → Extensions**. The extension's
+three configuration keys are removed. CRM records are not modified or deleted.
+
+## Requirements and compatibility
+
+- EspoCRM `>= 9.3.0`
+- PHP `>= 8.3`
+- A modern desktop browser
+
+Version 0.1.2 has been developed and tested against EspoCRM 10.0.3.
+
+Because the extension integrates with native frontend field views, test it on
+a staging instance before upgrading EspoCRM to a new major version.
+
+## User interaction reference
+
+| Action | Result |
+| --- | --- |
+| Hover an editable cell | Shows a subtle border and edit button |
+| Click the edit button | Opens inline editing |
+| Click empty cell space | Opens inline editing |
+| Click native linked content | Keeps the original EspoCRM action |
+| Click the blue check | Validates and saves |
+| Click cancel | Discards the current change |
+| Click outside after a change | Validates and saves, then closes |
+| Click outside without a change | Closes without saving |
+| Click another cell while editing | Saves the current field only |
+| Click that other cell again | Opens its editor |
+
+## Troubleshooting
+
+### The edit button is not displayed
+
+Check that:
+
+- Inline List Edit is enabled globally;
+- the entity is enabled in the extension settings;
+- the user's role grants edit access to the entity, record and field;
+- the record is not locked;
+- the field is not read-only.
+
+### A value is rejected
+
+The extension deliberately keeps EspoCRM validation. Try the same value in the
+full edit form and inspect EspoCRM logs if the server rejects it:
+
+```text
+data/logs/
 ```
-php init.php
+
+### Changes are not visible after installation
+
+Reload the browser without cache. Depending on the browser, use
+`Ctrl+Shift+R` or `Ctrl+F5`.
+
+## Repository structure
+
+This repository is based on the official
+[EspoCRM extension template](https://github.com/espocrm/ext-template).
+The development tooling is intentionally kept in the repository; it is not
+included in the installable ZIP.
+
+Important paths:
+
+```text
+src/                 Extension source code
+src/files/           Files installed into EspoCRM
+src/scripts/         Install and uninstall scripts
+src/tests/           JavaScript behavior tests
+build/               Generated ZIP packages, ignored by Git
+site/                Local EspoCRM development instance, ignored by Git
+compose.yaml         Local MariaDB and EspoCRM development services
 ```
 
-It will ask to enter an extension name and some other information. After the initialization, the script will prompt you to run `npm install`.
+The installable package contains only:
 
-After initialization, placeholders in the readme file will be replaced with values specific to your extension.
-Use the changed readme as the documentation.
-
-After initialization, you can remove `init.php` file from your repository. Commit the changes and proceed to configuration & building.
-
-## Configuration
-
-Create `config.json` file in the root directory. You can copy `config-default.json` and rename it to `config.json`.
-
-When reading, this config will be merged with `config-default.json`. You can override default parameters in the created config.
-
-Parameters:
-
-* espocrm.repository – from what repository to fetch EspoCRM;
-* espocrm.branch – what branch to fetch (`stable` is set by default); you can specify version number instead (e.g. `9.1.0`);
-* database - credentials of the dev database;
-* install.siteUrl – site url of the dev instance;
-* install.defaultOwner – a webserver owner (important to be set right);
-* install.defaultGroup – a webserver group (important to be set right).
-
-
-## Config for EspoCRM instance
-
-You can override EspoCRM config. Create `config.php` in the root directory of the repository. This file will be applied after EspoCRM installation (when building).
-
-Example:
-
-```php
-<?php
-return [
-    'useCacheInDeveloperMode' => true,
-];
+```text
+manifest.json
+files/
+scripts/
+tests/
 ```
 
-## Building
+## Development
 
-After building, EspoCRM instance with installed extension will be available at `site` directory. You will be able to access it with credentials:
+### Prerequisites
 
-* Username: admin
-* Password: 1
+- Node.js 18 or newer
+- npm 8 or newer
+- PHP 8.3 or newer
+- Composer
+- Docker with Docker Compose
 
-### Preparation
+### Local setup
 
-1. You need to have *node*, *npm*, *composer* installed.
-2. Run `npm install` (or `npm ci` if you are not building the extension from scratch).
-3. Create a database. Note that without the created database instance building will fail. The database name is set in the config file. You can change it.
-
-### Full EspoCRM instance building
-
-It will download EspoCRM (from the repository specified in the config), then build and install it (in the `site` directory). Then, it will install the extension in the instance.
-
-Command:
-
-```
+```bash
+npm install
+cp config-default.json config.json
+docker compose up -d db
 npm run all
+docker compose up -d web
 ```
 
-Note: If an error occurred, check `site/data/logs/` for details. It's often a database is not created.
+EspoCRM is then available at `http://localhost:8080`.
 
-The command removes the previously installed EspoCRM instance, but keep the database intact. Use this command to update the dev instance to the latest version or to any specific version (*espocrm.branch* parameter in the config).
+The default Docker credentials are intended for local development only.
 
-After the instance is ready, if your webserver is run under another user, you might need to fix file [ownership](https://docs.espocrm.com/administration/server-configuration/#ownership) (in the `site` directory).
+### Daily workflow
 
-### Copying extension files to EspoCRM instance
+Develop only in `src`. Never edit the generated `site` copy directly.
 
-You need to run this command every time you make changes in `src` directory, and you want to try these changes on Espo instance.
-
-Command:
-
-```
+```bash
+# Copy source changes into the local EspoCRM instance.
 npm run sync
-```
 
-To avoid running this command manually, use a file watcher in your IDE. The configuration for PhpStorm is included in this repository and enabled by default (no need any extra configuration). See below about the file watcher.
+# Run this as well when metadata changes.
+npm run clear-cache
 
-### Running after-install script
+# Run the JavaScript behavior tests.
+node src/tests/inline-editor-sizing.test.js
 
-AfterInstall.php will be applied for EspoCRM instance.
-
-Command:
-
-```
-node build --after-install
-```
-
-### Extension package building
-
-Command:
-
-```
+# Build the installable package.
 npm run extension
 ```
 
-The package will be created in `build` directory.
+The generated package is written to `build/`.
 
-Note: The version number is taken from `package.json`.
+## Contributing
 
-### Installing addition extensions
+Issues and pull requests are welcome.
 
-If your extension requires other extensions, there is a way to install them automatically while building the instance.
+When contributing:
 
-Necessary steps:
+1. Keep changes in `src`.
+2. Preserve EspoCRM's native interactions where possible.
+3. Respect frontend and server-side ACL.
+4. Inspect the implementation in the supported EspoCRM version before
+   overriding a field or record view.
+5. Add or update tests for behavior changes.
+6. Run the test suite and build the extension before opening a pull request.
 
-1. Add the current EspoCRM version to the `config.php`:
+## Support
 
-    ```php
-    <?php
-    return [
-        'version' => '9.3.0',
-    ];
-    ```
+Use GitHub Issues for reproducible bugs and feature requests. When reporting a
+problem, include:
 
-2. Create the `extensions` directory in the root directory of your repository.
-3. Put needed extensions (e.g. `my-extension-1.0.0.zip`) in this directory.
-
-Extensions will be installed automatically after running the command `node build --all` or `node build --install`.
-
-## Development workflow
-
-1. Do development in `src` dir.
-2. Run `npm run sync`.
-3. Test changes in EspoCRM instance at `site` dir.
-
-## Using entity manager to create entities
-
-You can block out new entity types right in Espo (using Entity Manager) and then copy generated custom files (`site/custom` dir) to the repository (`src` dir) using `copy-custom.js` script.
-
-1. Create entity types, fields, layouts, relationships in Espo (it should be available in `site` dir after building).
-2. Run `node copy-custom.js`. It will copy all files from `site/custom` to `src/files/custom/Espo/Modules/{@name}` and apply needed modifications to files.
-3. Remove files from `site/custom`.
-4. Run `npm run sync`. It will copy files from the repository to Espo build (`site/custom//Espo/Modules/{@name}` dir).
-5. Clear cache in Espo.
-6. Test in Espo.
-7. Commit changes.
-
-You can remove `copy-custom.js` from the repository if you don't plan to use it future.
-
-## Using composer in extension
-
-If your extension requires additional libraries, they can be installed by composer:
-
-1. Create a file `src/files/custom/Espo/Modules/{@name}/composer.json` with your dependencies. You can change dir to this directory and add composer dependencies using *composer require*.
-2. Once you run `node build --all` or `node build --composer-install`, composer dependencies will be automatically installed.
-3. Create a file `src/files/custom/Espo/Modules/{@name}/Resources/autoload.json`.
-
-Note: The extension build will contain only the `vendor` directory without the `composer.json` file.
-
-The `autoload.json` file defines paths for namespaces:
-
-```json
-{
-    "psr-4": {
-        "LibraryNamespace\\": "custom/Espo/Modules/{@name}/vendor/<vendor-name>/<library-name>/path/to/src"
-    }
-}
-```
-
-This definition is needed because in EspoCRM extensions are not installed via composer, they are included in runtime.
-
-For static analysis, add to `phpstan.neon`:
-
-```
-    excludePaths:
-        - src/files/custom/Espo/Modules/{@name}/vendor
-    scanDirectories:
-        - site/custom/Espo/Modules/{@name}/vendor
-```
-
-## Versioning
-
-The version number is stored in `package.json` and `package-lock.json`.
-
-Bumping version:
-
-```
-npm version patch
-npm version minor
-npm version major
-```
-
-## Tests
-
-To prepare an Espo instance for tests, run:
-
-```
-npm run prepare-test
-```
-
-It downloads the Espo package, unzips it in the *site* directory, and then runs composer install. To be used for unit tests and static analysis in CI environment as it takes less time than the full installation (with database).
-
-### Unit tests
-
-You need to install composer dev dependencies in the root first:
-
-```
-composer install
-```
-
-This root composer serves only for unit tests static analysis.
-
-Command to run unit tests:
-
-```
-vendor/bin/phpunit
-```
-
-or with a path:
-
-```
-vendor/bin/phpunit tests/unit/Espo/Modules/{@name}
-```
-
-or:
-
-```
-npm run unit-tests
-```
-
-Unit tests should be placed in `tests/unit/Espo/Modules/{@name}` directory and be in `tests\unit\Espo\Modules\{@name}`
-namespace.
-
-### Static analysis
-
-You need to install composer dev dependencies in the root first:
-
-```
-composer install
-```
-
-Command to run static analysis:
-
-```
-vendor/bin/phpstan
-```
-
-or:
-
-```
-npm run sa
-```
-
-PHPStan scans sources in the *src* and *site* directories as it's configured in *phpstan.neon*.
-
-### Integration tests
-
-Integrations tests are run from the *site* directory.
-
-You need to build a test instance first:
-
-1. `npm run sync`
-2. `(cd site; grunt test)`
-
-    You need to create a config file `tests/integration/config.php`:
-
-    ```php
-    <?php
-
-    return [
-        'database' => [
-            'driver' => 'pdo_mysql',
-            'host' => 'localhost',
-            'charset' => 'utf8mb4',
-            'dbname' => 'TEST_DB_NAME',
-            'user' => 'YOUR_DB_USER',
-            'password' => 'YOUR_DB_PASSWORD',
-        ],
-    ];
-    ```
-
-Command to run integration tests:
-
-```
-(npm run sync; cd site; vendor/bin/phpunit tests/integration/Espo/Modules/{@name})
-```
-
-or:
-
-```
-npm run integration-tests
-```
-
-Note that integration tests needs the full Espo installation.
-
-Integration tests should be placed in `tests/integration/Espo/Modules/{@name}` directory
-and be in `tests\integration\Espo\Modules\{@name}` namespace.
-
-### GitHub workflow
-
-A workflow running unit tests and static analysis is defined in `.github/workflows/test.yml.disabled`.
-Remove `.disabled` from the filename to activate the workflow.
-
-## Configuring IDE
-
-You need to set the following paths to be ignored in your IDE:
-
-* `build`
-* `site/build`
-* `site/custom/`
-* `site/client/custom/`
-* `site/tests/unit/Espo/Modules/{@name}`
-* `site/tests/integration/Espo/Modules/{@name}`
-
-### File watcher
-
-Note: The File Watcher configuration for PhpStorm is included in this repository (no need to configure).
-
-You can set up a file watcher in the IDE to automatically copy and transpile files upon saving.
-
-File watcher parameters for PhpStorm:
-
-* Program: `node`
-* Arguments: `build --copy-file --file=$FilePathRelativeToProjectRoot$`
-* Working Directory: `$ProjectFileDir$`
-
-## Using ES modules
-
-The initialization script asks whether you want to use ES6 modules. It's recommended to choose "YES".
-
-If you have chosen No and want to switch to ES6 later, then:
-
-1. Set *bundled* to true in `extension.json`.
-2. Set *bundled* and *jsTranspiled* to true in `src/files/custom/Espo/Modules/{@name}/Resources/module.json`.
-3. Add `src/files/custom/Espo/Modules/{@name}/Resources/metadata/app/client.json`
-    ```json
-    {
-        "scriptList": [
-            "__APPEND__",
-            "client/custom/modules/{@nameHyphen}/lib/init.js"
-        ]
-    }
-    ```
-
-## JavaScript frontend libraries
-
-Install *rollup*.
-
-In `extension.json`, add a command that will bundle the needed library into an AMD module. Example:
-
-```json
-{
-    "scripts": [
-        "npx rollup node_modules/some-lib/build/esm/index.mjs --format amd --file build/assets/lib/some-lib.js --amd.id some-lib"
-    ]
-}
-```
-
-Add the library module path to `src/files/custom/Espo/Modules/{@name}/Resources/metadata/app/jsLibs.json`
-
-```json
-{
-    "some-lib": {
-        "path": "client/custom/modules/{@nameHyphen}/lib/some-lib.js"
-    }
-}
-```
-
-When you build, the library module will be automatically included in the needed location.
-
-Note that you may also need to create *rollup.config.js* to set some additional Rollup parameters that are not supported via CLI usage.
-
-## Updating tooling libraries
-
-Update the version number of espo-extension-tools in package.json to the [latest one](https://github.com/espocrm/extension-tools/releases).
-
-Run:
-
-```
-npm update espo-extension-tools
-npm update espo-frontend-build-tools
-```
-
-Or just update everything:
-
-```
-npm update
-```
+- the Inline List Edit version;
+- the EspoCRM version;
+- the browser;
+- the field type;
+- reproduction steps;
+- relevant browser-console or EspoCRM log messages.
 
 ## License
 
-(change this section after initialization)
+Inline List Edit is free software licensed under the
+[GNU General Public License v3.0 or later](LICENSE).
 
-Change the license in `LICENSE` file. The current license is intended for scripts of this repository. It's not supposed to be used for code of your extension.
+## Author
+
+Created by Alex Santin.

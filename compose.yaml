@@ -1,0 +1,46 @@
+name: inline-list-edit-dev
+
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: espocrm_inline_list_edit
+      MARIADB_USER: espocrm
+      MARIADB_PASSWORD: espocrm_dev
+      MARIADB_ROOT_PASSWORD: espocrm_root_dev
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      development:
+        ipv4_address: 172.28.0.10
+
+  web:
+    image: espocrm/espocrm:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    volumes:
+      - ./site:/var/www/html
+    networks:
+      - development
+
+volumes:
+  mariadb-data:
+  php-tmp:
+
+networks:
+  development:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24

@@ -1,0 +1,13 @@
+{
+    "name": "Inline List Edit for EspoCRM",
+    "forwardPorts": [
+        8080
+    ],
+    "portsAttributes": {
+        "8080": {
+            "label": "EspoCRM",
+            "onAutoForward": "notify",
+            "visibility": "private"
+        }
+    }
+}

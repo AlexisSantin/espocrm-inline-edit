@@ -1,0 +1,11 @@
+{
+    "labels": {
+        "Inline List Edit": "Édition en ligne des listes"
+    },
+    "descriptions": {
+        "inlineListEdit": "Choisir les entités pour lesquelles l’édition en ligne est disponible."
+    },
+    "keywords": {
+        "inlineListEdit": "édition,en ligne,liste,entité,configuration"
+    }
+}

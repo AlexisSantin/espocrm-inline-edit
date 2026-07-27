@@ -1,22 +1,22 @@
 {
-  "name": "espocrm-ext-{@nameHyphen}",
-  "version": "0.0.1",
-  "description": "",
+  "name": "espocrm-ext-inline-list-edit",
+  "version": "0.1.2",
+  "description": "Modification rapide des champs depuis les vues liste EspoCRM",
   "scripts": {
-    "sa": "vendor/bin/phpstan",
-    "unit-tests": "vendor/bin/phpunit",
-    "integration-tests": "node build --copy && node build --composer-install && cd site && php vendor/bin/phpunit tests/integration/Espo/Modules/{@name}",
-    "copy": "node build --copy",
-    "composer-install": "node build --composer-install",
-    "sync": "node build --copy && node build --composer-install",
-    "extension": "node build --extension",
-    "clear-cache": "php site/clear_cache.php",
-    "rebuild": "node build --rebuild",
-    "all": "node build --all",
-    "prepare-test": "node build --prepare-test"
+    "sa": "export PATH=\"$PWD/docker-bin:$PATH\"; vendor/bin/phpstan",
+    "unit-tests": "export PATH=\"$PWD/docker-bin:$PATH\"; vendor/bin/phpunit",
+    "integration-tests": "export PATH=\"$PWD/docker-bin:$PATH\"; node build --copy && node build --composer-install && cd site && php vendor/bin/phpunit tests/integration/Espo/Modules/InlineListEdit",
+    "copy": "export PATH=\"$PWD/docker-bin:$PATH\"; node build --copy",
+    "composer-install": "export PATH=\"$PWD/docker-bin:$PATH\"; node build --composer-install",
+    "sync": "docker compose run --rm --no-deps --entrypoint sh web -c 'chown -R 1000:33 /var/www/html/custom /var/www/html/client/custom && chmod -R a+rwX /var/www/html/custom /var/www/html/client/custom'; export PATH=\"$PWD/docker-bin:$PATH\"; node build --copy && node build --composer-install",
+    "extension": "export PATH=\"$PWD/docker-bin:$PATH\"; node build --extension",
+    "clear-cache": "export PATH=\"$PWD/docker-bin:$PATH\"; php site/clear_cache.php",
+    "rebuild": "export PATH=\"$PWD/docker-bin:$PATH\"; node build --rebuild",
+    "all": "export PATH=\"$PWD/docker-bin:$PATH\"; node build --all",
+    "prepare-test": "export PATH=\"$PWD/docker-bin:$PATH\"; node build --prepare-test"
   },
   "type": "module",
-  "author": "{@author}",
+  "author": "Alex Santin",
   "dependencies": {
     "espo-extension-tools": "github:espocrm/extension-tools#0.4.5",
     "fs-extra": "^9.0.0"

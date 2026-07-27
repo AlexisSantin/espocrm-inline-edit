@@ -1,0 +1,8 @@
+{
+    "viewSetupHandlers": {
+        "record/list": [
+            "__APPEND__",
+            "inline-list-edit:handlers/record/list-inline-edit"
+        ]
+    }
+}
