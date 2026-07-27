@@ -14,10 +14,11 @@ docker compose stop
 EspoCRM est accessible sur :
 
 ```text
-https://friendly-adventure-7rr4jqr7r5q2x7x9-8080.app.github.dev
+http://localhost:8080
 ```
 
-Identifiants de développement : `admin` / `1`.
+Dans GitHub Codespaces, ouvrir le port privé `8080` depuis l’onglet **Ports**.
+Identifiants de développement uniquement : `admin` / `1`.
 
 ## Développement de l’extension
 

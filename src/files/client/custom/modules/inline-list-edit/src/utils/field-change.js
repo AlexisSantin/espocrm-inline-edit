@@ -67,6 +67,42 @@ export const hasInlineEditChanges = view => {
 };
 
 /**
+ * Mirrors EspoCRM's record-level pipeline setup handler. That handler is not
+ * present in list rows, so changing a pipeline inline would otherwise keep the
+ * stage from the previous pipeline and fail the native `pipelineStage.valid`
+ * backend validation.
+ */
+export const synchronizePipelineStage = view => {
+    if (
+        view.name !== 'pipeline' ||
+        !view.model ||
+        view.initialAttributes?.pipelineId ===
+            view.model.attributes.pipelineId
+    ) {
+        return false;
+    }
+
+    const pipeline = (view.pipelines || []).find(
+        item => item.id === view.model.attributes.pipelineId
+    );
+    const stage = pipeline?.stages?.[0] || null;
+    const refreshStageField = () =>
+        view.model.trigger?.('pipeline-changed');
+
+    view.model.setMultiple({
+        pipelineStageId: stage?.id || null,
+        pipelineStageName: stage?.name || null,
+    }, {silent: true});
+
+    view.model.once?.('sync', refreshStageField);
+    view.model.once?.('error', () =>
+        setTimeout(refreshStageField, 0)
+    );
+
+    return true;
+};
+
+/**
  * Reads the current editor, then either invokes EspoCRM's native save or
  * closes silently when the record is unchanged.
  */
@@ -75,6 +111,7 @@ export default function saveInlineEditIfChanged(
     saveCallback
 ) {
     view.fetchToModel?.();
+    synchronizePipelineStage(view);
 
     if (!hasInlineEditChanges(view)) {
         return view.inlineEditClose();
