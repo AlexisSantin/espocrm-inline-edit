@@ -41,6 +41,12 @@ Pour reconstruire EspoCRM après la synchronisation :
 npm run rebuild
 ```
 
+Tests JavaScript :
+
+```bash
+npm test
+```
+
 ## Recréation complète du site
 
 La base MariaDB doit être démarrée. Arrêter le serveur web pendant que `site`
