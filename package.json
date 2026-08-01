@@ -1,8 +1,10 @@
 {
   "name": "espocrm-ext-inline-list-edit",
   "version": "0.1.2",
-  "description": "Modification rapide des champs depuis les vues liste EspoCRM",
+  "description": "Fast, ACL-aware inline editing for EspoCRM list views.",
+  "license": "GPL-3.0-or-later",
   "scripts": {
+    "test": "node src/tests/inline-editor-sizing.test.js",
     "sa": "export PATH=\"$PWD/docker-bin:$PATH\"; vendor/bin/phpstan",
     "unit-tests": "export PATH=\"$PWD/docker-bin:$PATH\"; vendor/bin/phpunit",
     "integration-tests": "export PATH=\"$PWD/docker-bin:$PATH\"; node build --copy && node build --composer-install && cd site && php vendor/bin/phpunit tests/integration/Espo/Modules/InlineListEdit",

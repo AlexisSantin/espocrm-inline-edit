@@ -1,5 +1,7 @@
 {
     "name": "espocrm/ext-inline-list-edit",
+    "description": "Fast, ACL-aware inline editing for EspoCRM list views.",
+    "license": "GPL-3.0-or-later",
     "require": {
         "php": ">=8.3"
     },

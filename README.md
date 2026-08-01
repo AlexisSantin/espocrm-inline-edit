@@ -1,10 +1,10 @@
 # Inline List Edit for EspoCRM
 
-Inline List Edit adds fast, focused field editing directly to EspoCRM list
-views. It keeps EspoCRM's native navigation, validation and permissions while
-reducing the need to open a full record form for small updates.
+Inline List Edit adds fast, focused field editing directly to EspoCRM record
+list views. It keeps EspoCRM's native navigation, validation and permissions
+while reducing the need to open a full record form for small updates.
 
-Current version: **0.1.2**
+Current version: **0.1.2**. See the [release notes and download](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2).
 
 ## Features
 
@@ -101,10 +101,23 @@ standard and custom entities.
 The extension is enabled for all compatible entities after a first
 installation. Administrators can immediately restrict it to a selected list.
 
+The settings are stored under these EspoCRM configuration keys:
+
+| Setting | Key | Default |
+| --- | --- | --- |
+| Enable inline list editing | `inlineListEditEnabled` | `true` |
+| Enable for all entities | `inlineListEditAllEntities` | `true` |
+| Enabled entities | `inlineListEditEntityList` | `[]` |
+
+`inlineListEditEntityList` is used only when
+`inlineListEditAllEntities` is disabled. Selection-mode lists are left
+unchanged; inline editing is attached to record list views.
+
 ## Installation
 
 1. Download `inline-list-edit-0.1.2.zip` from the
-   [latest GitHub release](https://github.com/AlexisSantin/espocrm-extension/releases/latest).
+   [v0.1.2 GitHub release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2),
+   or choose the asset from the [latest release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/latest).
 2. In EspoCRM, open **Administration → Extensions**.
 3. Upload the ZIP file.
 4. Install the extension.
@@ -126,16 +139,22 @@ three configuration keys are removed. CRM records are not modified or deleted.
 
 ## Requirements and compatibility
 
-- EspoCRM `>= 9.3.0`
-- PHP `>= 8.3`
-- A modern desktop browser
+- EspoCRM `>= 9.3.0`.
+- PHP `>= 8.3`.
+- A browser supported by the installed EspoCRM version. This project does not
+  maintain a separate browser support matrix.
 
+The installable manifest declares the EspoCRM and PHP requirements above.
 Version 0.1.2 has been developed and tested against EspoCRM 10.0.3.
 
 Because the extension integrates with native frontend field views, test it on
 a staging instance before upgrading EspoCRM to a new major version.
 
-## User interaction reference
+## Usage
+
+In a record list view, hover an editable cell and use its pencil control, or
+click unused space inside the cell. Native links and other controls retain
+their normal EspoCRM behavior.
 
 | Action | Result |
 | --- | --- |
@@ -190,14 +209,17 @@ src/                 Extension source code
 src/files/           Files installed into EspoCRM
 src/scripts/         Install and uninstall scripts
 src/tests/           JavaScript behavior tests
+extension.json       Extension metadata used by the build
+package.json         Node.js scripts and package version
 build/               Generated ZIP packages, ignored by Git
 site/                Local EspoCRM development instance, ignored by Git
 compose.yaml         Local MariaDB and EspoCRM development services
 ```
 
-The installable package contains only:
+The installable package contains:
 
 ```text
+LICENSE
 manifest.json
 files/
 scripts/
@@ -239,14 +261,24 @@ npm run sync
 # Run this as well when metadata changes.
 npm run clear-cache
 
-# Run the JavaScript behavior tests.
-node src/tests/inline-editor-sizing.test.js
+# Run the JavaScript behavior tests (21 regression tests in v0.1.2).
+npm test
 
 # Build the installable package.
 npm run extension
 ```
 
 The generated package is written to `build/`.
+
+For PHP static analysis after the local EspoCRM site and Composer dependencies
+have been prepared, run:
+
+```bash
+npm run sa
+```
+
+The committed behavior coverage is currently in `src/tests/`; the repository
+does not include product-specific PHP unit or integration test cases.
 
 ## Contributing
 
@@ -260,12 +292,40 @@ When contributing:
 4. Inspect the implementation in the supported EspoCRM version before
    overriding a field or record view.
 5. Add or update tests for behavior changes.
-6. Run the test suite and build the extension before opening a pull request.
+6. Run `npm test` and build the extension with `npm run extension` before
+   opening a pull request.
+
+## Releasing
+
+The package version is read from `package.json`. The active
+`.github/workflows/release.yml` workflow runs when a matching `v*` tag is
+pushed. It installs the pinned dependencies, runs `npm test`, builds the
+installable ZIP, verifies that the tag matches `package.json`, and creates a
+published GitHub Release with the ZIP attached and a SHA-256 checksum.
+
+For a release:
+
+1. Update `package.json`, `CHANGELOG.md` and the supported-version notes in
+   this README.
+2. Run `npm test` and `npm run extension` locally if desired.
+3. Commit and push the changes to the default branch.
+4. Create and push the matching `v<version>` tag:
+
+   ```bash
+   git tag v<version>
+   git push origin v<version>
+   ```
+
+5. Monitor the **Actions** run. When it succeeds, the **Releases** page
+   contains `inline-list-edit-<version>.zip` for download.
+
+The [v0.1.2 release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2)
+already includes its downloadable ZIP asset.
 
 ## Support
 
-Use GitHub Issues for reproducible bugs and feature requests. When reporting a
-problem, include:
+Use [GitHub Issues](https://github.com/AlexisSantin/espocrm-inline-edit/issues)
+for reproducible bugs and feature requests. When reporting a problem, include:
 
 - the Inline List Edit version;
 - the EspoCRM version;

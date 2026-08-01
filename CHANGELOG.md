@@ -33,4 +33,4 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Long-text cells not opening from their empty area.
 - Pipeline changes failing `pipelineStage.valid` backend validation.
 
-[0.1.2]: https://github.com/AlexisSantin/espocrm-extension/releases/tag/v0.1.2
+[0.1.2]: https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2

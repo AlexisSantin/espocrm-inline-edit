@@ -1,0 +1,70 @@
+name: Build and publish release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish the extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build extension package
+        run: npm run extension
+
+      - name: Create GitHub release with the ZIP asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          package_version="$(node -p "require('./package.json').version")"
+          asset="build/inline-list-edit-${version}.zip"
+
+          if [ "$package_version" != "$version" ]; then
+            echo "Tag $tag does not match package.json version $package_version." >&2
+            exit 1
+          fi
+
+          test -f "$asset"
+          checksum="$(sha256sum "$asset" | awk '{print $1}')"
+          notes="$(cat <<EOF
+          Download \`inline-list-edit-${version}.zip\` and install it from **Administration → Extensions** in EspoCRM.
+
+          Configure the extension under **Administration → Customization → Inline List Edit**.
+
+          SHA-256: \`$checksum\`
+          EOF
+          )"
+
+          gh release create "$tag" "$asset" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Inline List Edit $tag" \
+            --verify-tag \
+            --latest \
+            --generate-notes \
+            --notes "$notes"

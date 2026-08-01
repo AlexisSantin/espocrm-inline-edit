@@ -1,7 +1,7 @@
 {
     "module": "InlineListEdit",
     "name": "Inline List Edit",
-    "description": "Modification rapide des champs depuis les vues liste EspoCRM.",
+    "description": "Fast, ACL-aware inline editing for EspoCRM list views.",
     "author": "Alex Santin",
     "bundled": true,
     "acceptableVersions": [
