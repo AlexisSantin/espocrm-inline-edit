@@ -33,6 +33,8 @@ export default class ListInlineEditSetupHandler {
 
     process() {
         const entityType = this.view.entityType || this.view.scope;
+        const currentUrl = this.view.getRouter()?.getCurrentUrl?.() || '';
+        const isAdministration = currentUrl.startsWith('#Admin/');
 
         if (
             !entityType ||
@@ -40,7 +42,9 @@ export default class ListInlineEditSetupHandler {
             this.view._inlineListEditEnabled ||
             !isInlineEditEnabledForEntity(
                 this.view.getConfig(),
-                entityType
+                entityType,
+                this.view.getMetadata(),
+                isAdministration
             ) ||
             !this.view.getAcl().checkScope(entityType, 'edit')
         ) {
@@ -78,6 +82,65 @@ export default class ListInlineEditSetupHandler {
         const sizing = new InlineEditorSizing();
         const coordinator = new InlineEditCoordinator();
 
+        const portalSelectizeDropdowns = view => {
+            const editor = view.$el?.find?.(
+                '.inline-list-edit-editor'
+            )?.get?.(0);
+
+            if (!editor) {
+                return;
+            }
+
+            const dropdownList = [];
+
+            editor.querySelectorAll('.selectize-control').forEach(control => {
+                const select = control.previousElementSibling;
+                const selectize = select?.selectize;
+                const dropdown = selectize?.$dropdown?.get?.(0);
+
+                if (!selectize || !dropdown) {
+                    return;
+                }
+
+                if (dropdown.parentElement !== document.body) {
+                    document.body.append(dropdown);
+                }
+
+                dropdown.classList.add('inline-list-edit-dropdown');
+                selectize.settings.dropdownParent = 'body';
+
+                const positionDropdown = selectize.positionDropdown;
+
+                selectize.positionDropdown = function (...args) {
+                    const result = positionDropdown.apply(this, args);
+                    const width = control.getBoundingClientRect().width;
+
+                    dropdown.style.setProperty(
+                        '--inline-list-edit-dropdown-min-width',
+                        `${width}px`
+                    );
+
+                    return result;
+                };
+
+                selectize.positionDropdown();
+                dropdownList.push(dropdown);
+            });
+
+            view._inlineListEditDropdownList = dropdownList;
+        };
+
+        const removePortaledSelectizeDropdowns = view => {
+            const dropdownList = view._inlineListEditDropdownList || [];
+
+            dropdownList.forEach(dropdown => {
+                dropdown.classList.remove('inline-list-edit-dropdown');
+                dropdown.remove();
+            });
+
+            view._inlineListEditDropdownList = [];
+        };
+
         prototype.get$cell = function () {
             if (this.$el?.is('td.cell')) {
                 return this.$el;
@@ -95,7 +158,10 @@ export default class ListInlineEditSetupHandler {
 
             return coordinator.open(
                 this,
-                () => inlineEdit.call(this)
+                async () => {
+                    await inlineEdit.call(this);
+                    portalSelectizeDropdowns(this);
+                }
             );
         };
 
@@ -250,6 +316,7 @@ export default class ListInlineEditSetupHandler {
                         this._inlineListEditActivationHandler
                     );
                 coordinator.release(this);
+                    removePortaledSelectizeDropdowns(this);
             });
         };
 
@@ -408,6 +475,7 @@ export default class ListInlineEditSetupHandler {
             this._inlineListEditAutocompleteObserver = null;
 
             removeInlineEditLinks.call(this);
+            removePortaledSelectizeDropdowns(this);
 
             if (this.$el?.is('td.cell')) {
                 const cell = this.$el.get(0);

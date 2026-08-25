@@ -10,6 +10,12 @@
             ],
             [
                 {
+                    "name": "inlineListEditAdminEnabled"
+                },
+                false
+            ],
+            [
+                {
                     "name": "inlineListEditAllEntities"
                 },
                 false

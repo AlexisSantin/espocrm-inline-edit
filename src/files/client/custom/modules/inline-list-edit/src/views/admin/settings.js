@@ -17,6 +17,16 @@ export default class InlineListEditSettingsView
                     ],
                 },
             },
+            inlineListEditAdminEnabled: {
+                visible: {
+                    conditionGroup: [
+                        {
+                            attribute: 'inlineListEditEnabled',
+                            type: 'isTrue',
+                        },
+                    ],
+                },
+            },
             inlineListEditEntityList: {
                 visible: {
                     conditionGroup: [
@@ -41,6 +51,10 @@ export default class InlineListEditSettingsView
 
         if (this.model.get('inlineListEditAllEntities') == null) {
             this.model.set('inlineListEditAllEntities', true);
+        }
+
+        if (this.model.get('inlineListEditAdminEnabled') == null) {
+            this.model.set('inlineListEditAdminEnabled', false);
         }
 
         if (this.model.get('inlineListEditEntityList') == null) {

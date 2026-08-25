@@ -18,6 +18,7 @@ class AfterInstall
         $defaultMap = [
             'inlineListEditEnabled' => true,
             'inlineListEditAllEntities' => true,
+            'inlineListEditAdminEnabled' => false,
             'inlineListEditEntityList' => [],
         ];
         $hasChanges = false;
@@ -28,6 +29,11 @@ class AfterInstall
             }
 
             $configWriter->set($name, $value);
+            $hasChanges = true;
+        }
+
+        if ($config->get('inlineListEditAdminUsersEnabled') !== null) {
+            $configWriter->remove('inlineListEditAdminUsersEnabled');
             $hasChanges = true;
         }
 

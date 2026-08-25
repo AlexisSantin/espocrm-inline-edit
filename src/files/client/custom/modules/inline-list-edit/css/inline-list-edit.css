@@ -99,8 +99,19 @@ body.inline-list-edit-session-active
     min-inline-size: 100%;
 }
 
+body > .selectize-dropdown.inline-list-edit-dropdown {
+    inline-size: max-content !important;
+    max-inline-size: calc(100vw - 24px);
+    min-inline-size: var(--inline-list-edit-dropdown-min-width);
+    z-index: 1080 !important;
+}
+
 .list > table > tbody > tr.list-row > td.cell.inline-list-edit-active >
     .inline-list-edit-editor .selectize-dropdown .option {
+    white-space: nowrap;
+}
+
+body > .selectize-dropdown.inline-list-edit-dropdown .option {
     white-space: nowrap;
 }
 

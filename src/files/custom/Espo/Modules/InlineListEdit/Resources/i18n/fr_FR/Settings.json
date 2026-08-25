@@ -5,11 +5,13 @@
     "fields": {
         "inlineListEditEnabled": "Activer l’édition en ligne",
         "inlineListEditAllEntities": "Activer pour toutes les entités",
+        "inlineListEditAdminEnabled": "Activer dans l’administration",
         "inlineListEditEntityList": "Entités activées"
     },
     "tooltips": {
         "inlineListEditEnabled": "Active ou désactive globalement Inline List Edit.",
         "inlineListEditAllEntities": "Rend l’édition en ligne disponible pour toutes les entités compatibles.",
+        "inlineListEditAdminEnabled": "Active ou désactive l’édition en ligne dans toutes les listes de l’espace Administration, selon la compatibilité de l’entité et les ACL.",
         "inlineListEditEntityList": "Entités pour lesquelles l’édition en ligne est disponible lorsque l’option toutes les entités est désactivée."
     }
 }
