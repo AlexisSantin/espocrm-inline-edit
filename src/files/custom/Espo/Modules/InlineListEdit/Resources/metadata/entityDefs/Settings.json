@@ -10,6 +10,11 @@
             "default": true,
             "tooltip": true
         },
+        "inlineListEditAdminEnabled": {
+            "type": "bool",
+            "default": false,
+            "tooltip": true
+        },
         "inlineListEditEntityList": {
             "type": "multiEnum",
             "translation": "Global.scopeNamesPlural",

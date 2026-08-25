@@ -732,30 +732,148 @@ test('entity configuration preserves legacy behavior and applies limits', () => 
     const createConfig = values => ({
         get: name => values[name],
     });
+    const metadata = {
+        get: path => ({
+            Lead: {
+                entity: true,
+                object: true,
+            },
+            Account: {
+                entity: true,
+                object: true,
+            },
+            User: {
+                entity: true,
+                object: true,
+            },
+            Role: {
+                entity: true,
+            },
+            Team: {
+                entity: true,
+            },
+            Extension: {
+                entity: true,
+            },
+        }[path[1]] || (
+            path[0] === 'clientDefs' &&
+            ['Role', 'Team'].includes(path[1]) &&
+            path[2] === 'recordViews' &&
+            path[3] === 'edit' ?
+                'views/' + path[1].toLowerCase() + '/record/edit' :
+                undefined
+        )),
+    };
 
     assert.equal(
-        isInlineEditEnabledForEntity(createConfig({}), 'Lead'),
+        isInlineEditEnabledForEntity(
+            createConfig({}),
+            'Lead',
+            metadata
+        ),
         true
     );
     assert.equal(
-        isInlineEditEnabledForEntity(createConfig({
-            inlineListEditEnabled: false,
-        }), 'Lead'),
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditEnabled: false,
+            }),
+            'Lead',
+            metadata
+        ),
         false
     );
     assert.equal(
-        isInlineEditEnabledForEntity(createConfig({
-            inlineListEditAllEntities: false,
-            inlineListEditEntityList: ['Lead', 'Account'],
-        }), 'Lead'),
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditAllEntities: false,
+                inlineListEditEntityList: ['Lead', 'Account'],
+            }),
+            'Lead',
+            metadata
+        ),
         true
     );
     assert.equal(
-        isInlineEditEnabledForEntity(createConfig({
-            inlineListEditAllEntities: false,
-            inlineListEditEntityList: ['Account'],
-        }), 'Lead'),
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditAdminEnabled: true,
+                inlineListEditAllEntities: true,
+            }),
+            'Role',
+            metadata,
+            true
+        ),
+        true
+    );
+    assert.equal(
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditAdminEnabled: true,
+                inlineListEditAllEntities: false,
+                inlineListEditEntityList: ['Account'],
+            }),
+            'Team',
+            metadata,
+            true
+        ),
+        true
+    );
+    assert.equal(
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditAdminEnabled: true,
+                inlineListEditAllEntities: true,
+            }),
+            'Role',
+            metadata
+        ),
         false
+    );
+    assert.equal(
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditAllEntities: false,
+                inlineListEditEntityList: ['Account'],
+            }),
+            'Lead',
+            metadata
+        ),
+        false
+    );
+    assert.equal(
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditAllEntities: true,
+            }),
+            'Extension',
+            metadata
+        ),
+        false
+    );
+    assert.equal(
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditAdminEnabled: false,
+                inlineListEditAllEntities: true,
+            }),
+            'User',
+            metadata,
+            true
+        ),
+        false
+    );
+    assert.equal(
+        isInlineEditEnabledForEntity(
+            createConfig({
+                inlineListEditAdminEnabled: false,
+                inlineListEditAllEntities: true,
+            }),
+            'User',
+            metadata,
+            false
+        ),
+        true
     );
 });
 

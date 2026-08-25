@@ -5,11 +5,13 @@
     "fields": {
         "inlineListEditEnabled": "Enable inline list editing",
         "inlineListEditAllEntities": "Enable for all entities",
+        "inlineListEditAdminEnabled": "Enable in Administration",
         "inlineListEditEntityList": "Enabled entities"
     },
     "tooltips": {
         "inlineListEditEnabled": "Globally enables or disables Inline List Edit.",
         "inlineListEditAllEntities": "Makes inline editing available for every compatible entity.",
+        "inlineListEditAdminEnabled": "Enables or disables inline editing in all Administration lists, subject to entity compatibility and ACL.",
         "inlineListEditEntityList": "Entities where inline editing is available when the all-entities option is disabled."
     }
 }

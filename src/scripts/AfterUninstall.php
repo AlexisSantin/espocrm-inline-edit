@@ -17,6 +17,8 @@ class AfterUninstall
         foreach ([
             'inlineListEditEnabled',
             'inlineListEditAllEntities',
+            'inlineListEditAdminEnabled',
+            'inlineListEditAdminUsersEnabled',
             'inlineListEditEntityList',
         ] as $name) {
             $configWriter->remove($name);
