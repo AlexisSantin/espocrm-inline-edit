@@ -87,9 +87,12 @@ After installation, open:
 
 **Administration → Customization → Inline List Edit**
 
-The page provides three settings:
+The page provides four settings:
 
 - **Enable inline list editing** — global on/off switch.
+- **Enable in Administration** — enables inline editing in Administration lists
+  independently from regular record lists. It remains subject to entity
+  compatibility and ACL.
 - **Enable for all entities** — enables the extension for every compatible
   entity.
 - **Enabled entities** — when the previous option is disabled, selects exactly
@@ -98,14 +101,19 @@ The page provides three settings:
 The entity selector lists enabled EspoCRM object entities and supports both
 standard and custom entities.
 
-The extension is enabled for all compatible entities after a first
-installation. Administrators can immediately restrict it to a selected list.
+![Inline List Edit administration settings](docs/screenshots/administration-settings.png)
+
+After a first installation, inline editing is enabled for all compatible
+record-list entities, while Administration lists remain disabled until
+**Enable in Administration** is turned on. Administrators can then restrict
+regular record lists to a selected set of entities.
 
 The settings are stored under these EspoCRM configuration keys:
 
 | Setting | Key | Default |
 | --- | --- | --- |
 | Enable inline list editing | `inlineListEditEnabled` | `true` |
+| Enable in Administration | `inlineListEditAdminEnabled` | `false` |
 | Enable for all entities | `inlineListEditAllEntities` | `true` |
 | Enabled entities | `inlineListEditEntityList` | `[]` |
 
@@ -122,7 +130,7 @@ unchanged; inline editing is attached to record list views.
 3. Upload the ZIP file.
 4. Install the extension.
 5. Reload EspoCRM in the browser.
-6. Configure the enabled entities under
+6. Configure activation and entity scope under
    **Administration → Customization → Inline List Edit**.
 
 Do not unzip the package before uploading it to EspoCRM.
@@ -135,7 +143,7 @@ Existing Inline List Edit settings are preserved.
 ### Uninstall
 
 Uninstall the extension from **Administration → Extensions**. The extension's
-three configuration keys are removed. CRM records are not modified or deleted.
+four configuration keys are removed. CRM records are not modified or deleted.
 
 ## Requirements and compatibility
 
@@ -176,10 +184,12 @@ their normal EspoCRM behavior.
 Check that:
 
 - Inline List Edit is enabled globally;
+- **Enable in Administration** is turned on when editing an Administration
+  list;
 - the entity is enabled in the extension settings;
 - the user's role grants edit access to the entity, record and field;
 - the record is not locked;
-- the field is not read-only.
+- the field is not read-only;
 
 ### A value is rejected
 
