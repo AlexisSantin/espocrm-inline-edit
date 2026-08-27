@@ -4,6 +4,17 @@ All notable changes to Inline List Edit are documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] - 2026-08-27
+
+### Added
+
+- An Administration setting to enable inline editing in Administration lists,
+  disabled by default.
+
+### Changed
+
+- Release packaging and documentation now include the Administration setting.
+
 ## [0.1.2] - 2026-07-27
 
 ### Added
@@ -33,4 +44,5 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Long-text cells not opening from their empty area.
 - Pipeline changes failing `pipelineStage.valid` backend validation.
 
+[0.1.3]: https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.3
 [0.1.2]: https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2
