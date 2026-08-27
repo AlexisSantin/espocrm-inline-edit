@@ -4,7 +4,7 @@ Inline List Edit adds fast, focused field editing directly to EspoCRM record
 list views. It keeps EspoCRM's native navigation, validation and permissions
 while reducing the need to open a full record form for small updates.
 
-Current version: **0.1.2**. See the [release notes and download](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2).
+Current version: **0.1.3**. See the [release notes and download](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.3).
 
 ## Features
 
@@ -123,8 +123,8 @@ unchanged; inline editing is attached to record list views.
 
 ## Installation
 
-1. Download `inline-list-edit-0.1.2.zip` from the
-   [v0.1.2 GitHub release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2),
+1. Download `inline-list-edit-0.1.3.zip` from the
+  [v0.1.3 GitHub release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.3),
    or choose the asset from the [latest release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/latest).
 2. In EspoCRM, open **Administration → Extensions**.
 3. Upload the ZIP file.
@@ -153,7 +153,7 @@ four configuration keys are removed. CRM records are not modified or deleted.
   maintain a separate browser support matrix.
 
 The installable manifest declares the EspoCRM and PHP requirements above.
-Version 0.1.2 has been developed and tested against EspoCRM 10.0.3.
+Version 0.1.3 has been developed and tested against EspoCRM 10.0.3.
 
 Because the extension integrates with native frontend field views, test it on
 a staging instance before upgrading EspoCRM to a new major version.
@@ -271,7 +271,7 @@ npm run sync
 # Run this as well when metadata changes.
 npm run clear-cache
 
-# Run the JavaScript behavior tests (21 regression tests in v0.1.2).
+# Run the JavaScript behavior tests (21 regression tests in v0.1.3).
 npm test
 
 # Build the installable package.
@@ -329,7 +329,7 @@ For a release:
 5. Monitor the **Actions** run. When it succeeds, the **Releases** page
    contains `inline-list-edit-<version>.zip` for download.
 
-The [v0.1.2 release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2)
+The [v0.1.3 release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.3)
 already includes its downloadable ZIP asset.
 
 ## Support
