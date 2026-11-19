@@ -4,6 +4,26 @@ All notable changes to Inline List Edit are documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Keyboard activation of the edit button with Enter or Space.
+- Continuous integration running the JavaScript tests on Node.js 18 and 22.
+
+### Changed
+
+- Opening another field while an editor is open now saves the active field
+  instead of discarding its pending change.
+- Edit buttons hidden during an active edit are removed from the tab order.
+
+### Fixed
+
+- Fields with the `inlineEditDisabled` parameter could be edited inline.
+- Dynamic logic `readOnly` and `readOnlySaved` rules were ignored in lists;
+  dynamic `required` rules were not applied to inline editors.
+- Entities with `editDisabled` client definitions could be edited inline.
+
 ## [0.1.3] - 2026-08-27
 
 ### Added

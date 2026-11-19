@@ -34,6 +34,8 @@ body.inline-list-edit-session-active
     td.cell:not(.inline-list-edit-active) > .inline-edit-link {
     opacity: 0 !important;
     pointer-events: none !important;
+    /* Also removes the hidden controls from the keyboard tab order. */
+    visibility: hidden !important;
 }
 
 .list > table > tbody > tr.list-row > td.cell.inline-list-edit-active {

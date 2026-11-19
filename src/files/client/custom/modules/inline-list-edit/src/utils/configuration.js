@@ -13,7 +13,8 @@ function isInlineEditEntityAvailable(
     if (
         !defs.entity ||
         defs.disabled ||
-        entityType === 'Settings'
+        entityType === 'Settings' ||
+        metadata?.get(['clientDefs', entityType, 'editDisabled'])
     ) {
         return false;
     }

@@ -17,7 +17,10 @@ export default class InlineListEditEntityListFieldView
                     defs.entity &&
                     defs.object &&
                     !defs.disabled &&
-                    scope !== 'Settings'
+                    scope !== 'Settings' &&
+                    !this.getMetadata().get(
+                        ['clientDefs', scope, 'editDisabled']
+                    )
                 );
             })
             .sort((scopeA, scopeB) =>

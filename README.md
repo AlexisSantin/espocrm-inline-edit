@@ -75,7 +75,15 @@ Before displaying an edit control, it checks:
 - whether the user can edit the specific record;
 - field-level forbidden lists from the user's role;
 - read-only and disabled fields;
+- fields with the `inlineEditDisabled` parameter;
+- entities whose client definitions set `editDisabled`;
+- dynamic logic `readOnly` and `readOnlySaved` rules, evaluated against the
+  row with EspoCRM's own condition engine;
 - locked records.
+
+Dynamic logic `required` rules are applied to the inline editor as they are in
+the full form. A dynamic rule that cannot be evaluated locks the field rather
+than allowing an edit the full form might refuse.
 
 Every update is then sent through EspoCRM's native record API. Server-side ACL,
 field validation and business rules remain authoritative even if a frontend
@@ -176,6 +184,12 @@ their normal EspoCRM behavior.
 | Click outside without a change | Closes without saving |
 | Click another cell while editing | Saves the current field only |
 | Click that other cell again | Opens its editor |
+| Focus the edit button and press Enter or Space | Opens inline editing |
+| Press Ctrl+Enter in an editor | Validates and saves (EspoCRM native) |
+| Press Escape in an editor | Discards the current change (EspoCRM native) |
+
+Opening another field while an editor is open never discards the pending
+change: the active field is validated and saved first.
 
 ## Troubleshooting
 
@@ -190,6 +204,8 @@ Check that:
 - the user's role grants edit access to the entity, record and field;
 - the record is not locked;
 - the field is not read-only;
+- the field does not use the `inlineEditDisabled` parameter;
+- no dynamic logic rule makes the field read-only for this record;
 
 ### A value is rejected
 
@@ -271,7 +287,7 @@ npm run sync
 # Run this as well when metadata changes.
 npm run clear-cache
 
-# Run the JavaScript behavior tests (21 regression tests in v0.1.3).
+# Run the JavaScript behavior tests (every `src/tests/*.test.js` file).
 npm test
 
 # Build the installable package.

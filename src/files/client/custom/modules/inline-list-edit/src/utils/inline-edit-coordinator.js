@@ -1,7 +1,8 @@
 /**
  * Serializes editor switches and guarantees that only one list field stays in
- * inline-edit mode. Opening another field cancels the previous unsaved edit;
- * clicking outside validates and saves the active field.
+ * inline-edit mode. Requesting another field while one is open validates and
+ * saves the active field instead of opening the new one, so a pending change
+ * is never discarded. Clicking outside behaves the same way.
  */
 export default class InlineEditCoordinator {
 
@@ -39,7 +40,9 @@ export default class InlineEditCoordinator {
                 this.activeView !== view &&
                 this.isOpen(this.activeView)
             ) {
-                await this.activeView.inlineEditClose();
+                this.save(this.activeView);
+
+                return false;
             }
 
             this.activeView = view;
@@ -56,6 +59,8 @@ export default class InlineEditCoordinator {
                 this.setSessionActive(true);
                 this.listenForOutsideInteraction();
             }
+
+            return true;
         };
         const result = this.transition.then(
             switchEditor,

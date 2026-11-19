@@ -733,7 +733,7 @@ test('entity configuration preserves legacy behavior and applies limits', () => 
         get: name => values[name],
     });
     const metadata = {
-        get: path => ({
+        get: path => (path[0] === 'scopes' && {
             Lead: {
                 entity: true,
                 object: true,
@@ -877,18 +877,46 @@ test('entity configuration preserves legacy behavior and applies limits', () => 
     );
 });
 
-test('opening a field closes the previous inline editor', async () => {
-    const coordinator = new InlineEditCoordinator();
+test('entities with editDisabled client definitions are never inline-editable', () => {
+    const metadata = {
+        get: path => ({
+            'scopes.Lead': {entity: true, object: true},
+            'scopes.Account': {entity: true, object: true},
+            'clientDefs.Account.editDisabled': true,
+        })[path.join('.')],
+    };
+    const config = {get: () => undefined};
+
+    assert.equal(
+        isInlineEditEnabledForEntity(config, 'Lead', metadata),
+        true
+    );
+    assert.equal(
+        isInlineEditEnabledForEntity(config, 'Account', metadata),
+        false
+    );
+});
+
+test('requesting another field saves the active editor instead of discarding it', async () => {
+    const coordinator = new InlineEditCoordinator({});
     const createView = () => {
         const view = {
             _isInlineEditMode: false,
             closeCount: 0,
+            fetchCount: 0,
+            saveCount: 0,
             $el: {
                 get: () => ({isConnected: true}),
                 is: selector => selector === 'td.cell',
             },
         };
 
+        view.fetchToModel = () => {
+            view.fetchCount++;
+        };
+        view.inlineEditSave = () => {
+            view.saveCount++;
+        };
         view.inlineEditClose = async () => {
             view.closeCount++;
             view._isInlineEditMode = false;
@@ -900,16 +928,32 @@ test('opening a field closes the previous inline editor', async () => {
     const firstView = createView();
     const secondView = createView();
 
-    await coordinator.open(firstView, async () => {
-        firstView._isInlineEditMode = true;
-    });
-    await coordinator.open(secondView, async () => {
-        secondView._isInlineEditMode = true;
-    });
+    assert.equal(
+        await coordinator.open(firstView, async () => {
+            firstView._isInlineEditMode = true;
+        }),
+        true
+    );
+    assert.equal(
+        await coordinator.open(secondView, async () => {
+            secondView._isInlineEditMode = true;
+        }),
+        false
+    );
 
-    assert.equal(firstView.closeCount, 1);
-    assert.equal(firstView._isInlineEditMode, false);
-    assert.equal(secondView.closeCount, 0);
+    assert.equal(firstView.closeCount, 0);
+    assert.equal(firstView.fetchCount, 1);
+    assert.equal(firstView.saveCount, 1);
+    assert.equal(secondView._isInlineEditMode, false);
+
+    await firstView.inlineEditClose();
+
+    assert.equal(
+        await coordinator.open(secondView, async () => {
+            secondView._isInlineEditMode = true;
+        }),
+        true
+    );
     assert.equal(secondView._isInlineEditMode, true);
 });
 

@@ -1,4 +1,5 @@
 import BaseFieldView from 'views/fields/base';
+import DynamicLogic from 'dynamic-logic';
 import $ from 'jquery';
 import InlineEditorSizing from
     'inline-list-edit:utils/inline-editor-sizing';
@@ -18,6 +19,31 @@ import scheduleFieldInitialization from
     'inline-list-edit:utils/field-initialization';
 import saveInlineEditIfChanged from
     'inline-list-edit:utils/field-change';
+import {
+    applyRequiredLogic,
+    canInlineEditField,
+} from 'inline-list-edit:utils/field-access';
+
+const ACTIVATION_KEY_LIST = ['Enter', ' '];
+
+/**
+ * Evaluates a dynamic logic condition group against a list row, exactly as
+ * the record form would, through EspoCRM's own condition engine.
+ */
+const createConditionChecker = view => conditionGroup => {
+    const recordView = {
+        model: view.model,
+        getUser: () => view.getUser(),
+        getDateTime: () => view.getDateTime(),
+        getPreSaveAttributes: () => ({...view.model.attributes}),
+    };
+
+    return new DynamicLogic({}, recordView)
+        .checkConditionGroup(conditionGroup);
+};
+
+const isFieldInlineEditable = view =>
+    canInlineEditField(view, createConditionChecker(view));
 
 /**
  * Enables EspoCRM's native field inline-edit mode in record lists.
@@ -154,6 +180,16 @@ export default class ListInlineEditSetupHandler {
                 return inlineEdit.call(this);
             }
 
+            if (
+                this.options?.inlineListEditEnabled &&
+                !isFieldInlineEditable(this)
+            ) {
+                this._inlineListEditRestoreControls?.();
+
+                return Promise.resolve(false);
+            }
+
+            applyRequiredLogic(this, createConditionChecker(this));
             rememberListMode(this);
 
             return coordinator.open(
@@ -190,7 +226,14 @@ export default class ListInlineEditSetupHandler {
 
             return saveInlineEditIfChanged(
                 this,
-                () => inlineEditSave.apply(this, args)
+                () => {
+                    applyRequiredLogic(
+                        this,
+                        createConditionChecker(this)
+                    );
+
+                    return inlineEditSave.apply(this, args);
+                }
             );
         };
 
@@ -229,7 +272,8 @@ export default class ListInlineEditSetupHandler {
                                 this,
                                 event,
                                 cell
-                            )
+                            ) ||
+                            !isFieldInlineEditable(this)
                         ) {
                             return;
                         }
@@ -246,11 +290,15 @@ export default class ListInlineEditSetupHandler {
                     );
                 }
 
+                const isEditable =
+                    this.isReadMode() &&
+                    !this.disabled &&
+                    !this.readOnly &&
+                    isFieldInlineEditable(this);
+
                 cell.classList.toggle(
                     'inline-list-edit-cell-enabled',
-                    this.isReadMode() &&
-                        !this.disabled &&
-                        !this.readOnly
+                    isEditable
                 );
 
                 if (this._isInlineEditMode && this.isEditMode()) {
@@ -265,17 +313,17 @@ export default class ListInlineEditSetupHandler {
                     return;
                 }
 
-                if (
-                    !this.isReadMode() ||
-                    this.disabled ||
-                    this.readOnly
-                ) {
-                    return;
-                }
-
                 const existingEdit = cell.querySelector(
                     ':scope > .inline-edit-link'
                 );
+
+                if (!isEditable) {
+                    if (this.isReadMode()) {
+                        existingEdit?.remove();
+                    }
+
+                    return;
+                }
 
                 if (existingEdit) {
                     existingEdit.classList.remove('hidden');
@@ -301,6 +349,21 @@ export default class ListInlineEditSetupHandler {
                     event.stopPropagation();
                     this.inlineEdit();
                 });
+                edit.addEventListener('keydown', event => {
+                    if (
+                        !ACTIVATION_KEY_LIST.includes(event.key) ||
+                        event.altKey ||
+                        event.ctrlKey ||
+                        event.metaKey ||
+                        event.shiftKey
+                    ) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.inlineEdit();
+                });
 
                 cell.prepend(edit);
             };
@@ -309,6 +372,12 @@ export default class ListInlineEditSetupHandler {
                 restoreInlineControls;
             restoreInlineControls();
             this.on('after:render', restoreInlineControls);
+
+            // Dynamic logic may depend on another field saved from the row.
+            if (this.model) {
+                this.listenTo(this.model, 'sync', restoreInlineControls);
+            }
+
             this.once('remove', () => {
                 this._inlineListEditActivationCell
                     ?.removeEventListener(
@@ -316,7 +385,7 @@ export default class ListInlineEditSetupHandler {
                         this._inlineListEditActivationHandler
                     );
                 coordinator.release(this);
-                    removePortaledSelectizeDropdowns(this);
+                removePortaledSelectizeDropdowns(this);
             });
         };
 
