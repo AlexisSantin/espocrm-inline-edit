@@ -4,7 +4,10 @@ import test from 'node:test';
 import {
     applyRequiredLogic,
     canInlineEditField,
+    createLoadedAttributeModel,
+    getConditionAttributeList,
     getFieldLogicDefs,
+    getLogicAttributeList,
     isInlineEditDisabledForField,
     isReadOnlyByLogic,
     isRequiredByLogic,
@@ -187,4 +190,113 @@ test('dynamic required rules follow the row and restore the field default', () =
 
     assert.equal(applyRequiredLogic(withoutRule, () => true), false);
     assert.deepEqual(withoutRule.requiredCalls, []);
+});
+
+test('condition attributes are collected from nested groups', () => {
+    assert.deepEqual(
+        getConditionAttributeList([
+            {type: 'equals', attribute: 'status', value: 'Closed'},
+            {
+                type: 'or',
+                value: [
+                    {type: 'isEmpty', attribute: 'assignedUserId'},
+                    {type: 'equals', attribute: '$user.id', value: 'x'},
+                    {
+                        type: 'not',
+                        value: {type: 'contains', attribute: 'teamsIds'},
+                    },
+                    {type: 'equals', attribute: 'status', value: 'New'},
+                ],
+            },
+        ]),
+        ['status', 'assignedUserId', 'teamsIds']
+    );
+    assert.deepEqual(getConditionAttributeList(undefined), []);
+});
+
+test('every attribute read by field rules is selected for the list', () => {
+    const metadata = createMetadata({
+        'logicDefs.Case.fields': {
+            description: {
+                ...lockedWhenClosed,
+                visible: {
+                    conditionGroup: [
+                        {type: 'isNotEmpty', attribute: 'visibleOnly'},
+                    ],
+                },
+            },
+            priority: {},
+        },
+        'logicDefs.Case.fields.description': {
+            ...lockedWhenClosed,
+            visible: {
+                conditionGroup: [
+                    {type: 'isNotEmpty', attribute: 'visibleOnly'},
+                ],
+            },
+        },
+        'clientDefs.Case.dynamicLogic.fields': {
+            name: {},
+        },
+        'clientDefs.Case.dynamicLogic.fields.name': {
+            readOnlySaved: {
+                conditionGroup: [
+                    {type: 'isTrue', attribute: 'isLocked'},
+                ],
+            },
+            required: {
+                conditionGroup: [
+                    {type: 'equals', attribute: 'type', value: 'Incident'},
+                ],
+            },
+        },
+    });
+
+    assert.deepEqual(
+        getLogicAttributeList(metadata, 'Case'),
+        ['status', 'isLocked', 'type']
+    );
+    assert.deepEqual(getLogicAttributeList(metadata, 'Account'), []);
+    assert.deepEqual(getLogicAttributeList(null, 'Case'), []);
+});
+
+test('a rule reading an attribute missing from the row locks the field', () => {
+    const attributes = {status: 'New', closedAt: null};
+    const model = createLoadedAttributeModel({
+        entityType: 'Case',
+        isNew: () => false,
+        get: attribute => attributes[attribute],
+    });
+
+    assert.equal(model.has('status'), true);
+    assert.equal(model.has('closedAt'), true);
+    assert.equal(model.get('status'), 'New');
+    assert.throws(() => model.has('accountId'), /accountId/);
+
+    const checker = conditionGroup => conditionGroup.every(item =>
+        model.has(item.attribute) &&
+        model.get(item.attribute) === item.value
+    );
+    const consoleError = console.error;
+
+    console.error = () => {};
+
+    try {
+        assert.equal(isReadOnlyByLogic(lockedWhenClosed, checker), false);
+        assert.equal(
+            isReadOnlyByLogic(
+                {
+                    readOnly: {
+                        conditionGroup: [
+                            {type: 'equals', attribute: 'accountId', value: 'a'},
+                        ],
+                    },
+                },
+                checker
+            ),
+            true
+        );
+    } finally {
+        console.error = consoleError;
+    }
 });

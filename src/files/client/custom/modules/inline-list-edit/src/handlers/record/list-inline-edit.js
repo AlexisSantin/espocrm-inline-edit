@@ -22,17 +22,20 @@ import saveInlineEditIfChanged from
 import {
     applyRequiredLogic,
     canInlineEditField,
+    createLoadedAttributeModel,
+    getLogicAttributeList,
 } from 'inline-list-edit:utils/field-access';
 
 const ACTIVATION_KEY_LIST = ['Enter', ' '];
 
 /**
  * Evaluates a dynamic logic condition group against a list row, exactly as
- * the record form would, through EspoCRM's own condition engine.
+ * the record form would, through EspoCRM's own condition engine. An attribute
+ * missing from the row makes the rule impossible to evaluate.
  */
 const createConditionChecker = view => conditionGroup => {
     const recordView = {
-        model: view.model,
+        model: createLoadedAttributeModel(view.model),
         getUser: () => view.getUser(),
         getDateTime: () => view.getDateTime(),
         getPreSaveAttributes: () => ({...view.model.attributes}),
@@ -79,9 +82,34 @@ export default class ListInlineEditSetupHandler {
 
         this.view._inlineListEditEnabled = true;
 
+        this.selectLogicAttributes(entityType);
         this.fixNativeFieldInlineEdit();
         this.overrideLayoutConversion();
         this.overrideRowLayoutPreparation();
+    }
+
+    /**
+     * A record list only fetches the attributes of its columns. Dynamic logic
+     * rules may read other attributes, which are added to the list's select
+     * so the rules are checked against the actual record. Setup handlers run
+     * before the list computes its select attribute list.
+     */
+    selectLogicAttributes(entityType) {
+        const attributeList = getLogicAttributeList(
+            this.view.getMetadata(),
+            entityType
+        );
+
+        if (!attributeList.length) {
+            return;
+        }
+
+        this.view.mandatorySelectAttributeList = [
+            ...new Set([
+                ...(this.view.mandatorySelectAttributeList || []),
+                ...attributeList,
+            ]),
+        ];
     }
 
     /**

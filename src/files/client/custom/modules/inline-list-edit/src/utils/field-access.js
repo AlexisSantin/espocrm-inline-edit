@@ -3,6 +3,17 @@ const READ_ONLY_LOGIC_TYPE_LIST = [
     'readOnlySaved',
 ];
 
+const LOGIC_TYPE_LIST = [
+    ...READ_ONLY_LOGIC_TYPE_LIST,
+    'required',
+];
+
+const CONDITION_GROUP_TYPE_LIST = [
+    'and',
+    'or',
+    'not',
+];
+
 /**
  * Returns the dynamic logic defined for a field. EspoCRM stores it under
  * `logicDefs`; `clientDefs.<Entity>.dynamicLogic` is kept as a fallback for
@@ -25,6 +36,102 @@ export const getFieldLogicDefs = (metadata, entityType, fieldName) => {
         null
     );
 };
+
+/**
+ * Lists the record attributes a condition group reads. Runtime values such as
+ * `$user.id` do not come from the record and are skipped.
+ */
+export const getConditionAttributeList = conditionGroup => {
+    const attributeSet = new Set();
+
+    const collect = item => {
+        if (Array.isArray(item)) {
+            item.forEach(collect);
+
+            return;
+        }
+
+        if (!item || typeof item !== 'object') {
+            return;
+        }
+
+        if (CONDITION_GROUP_TYPE_LIST.includes(item.type)) {
+            collect(item.value);
+
+            return;
+        }
+
+        if (
+            typeof item.attribute === 'string' &&
+            item.attribute &&
+            !item.attribute.startsWith('$')
+        ) {
+            attributeSet.add(item.attribute);
+        }
+    };
+
+    collect(conditionGroup);
+
+    return [...attributeSet];
+};
+
+/**
+ * Lists the attributes read by the entity's `readOnly`, `readOnlySaved` and
+ * `required` rules. A record list only fetches the attributes of its columns,
+ * so these must be selected too for the rules to see the actual record.
+ */
+export const getLogicAttributeList = (metadata, entityType) => {
+    if (!metadata || !entityType) {
+        return [];
+    }
+
+    const fieldNameSet = new Set([
+        ...Object.keys(
+            metadata.get(['logicDefs', entityType, 'fields']) || {}
+        ),
+        ...Object.keys(
+            metadata.get([
+                'clientDefs',
+                entityType,
+                'dynamicLogic',
+                'fields',
+            ]) || {}
+        ),
+    ]);
+    const attributeSet = new Set();
+
+    fieldNameSet.forEach(fieldName => {
+        const logicDefs = getFieldLogicDefs(metadata, entityType, fieldName);
+
+        LOGIC_TYPE_LIST.forEach(type => {
+            getConditionAttributeList(logicDefs?.[type]?.conditionGroup)
+                .forEach(attribute => attributeSet.add(attribute));
+        });
+    });
+
+    return [...attributeSet];
+};
+
+/**
+ * Exposes a list row to EspoCRM's condition engine. Reading an attribute the
+ * row did not load throws, so the rule counts as impossible to evaluate
+ * instead of silently comparing an empty value.
+ */
+export const createLoadedAttributeModel = model => ({
+    entityType: model.entityType,
+    isNew: () => model.isNew(),
+    has: attribute => {
+        if (model.get(attribute) === undefined) {
+            throw new Error(
+                `Inline List Edit: attribute "${attribute}" is not loaded ` +
+                'in this list row; the dynamic logic rule cannot be checked.'
+            );
+        }
+
+        return true;
+    },
+    get: attribute => model.get(attribute),
+});
 
 /**
  * Mirrors the `inlineEditDisabled` field parameter honored by EspoCRM detail

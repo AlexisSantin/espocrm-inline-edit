@@ -4,7 +4,7 @@ All notable changes to Inline List Edit are documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.0] - 2026-11-20
 
 ### Added
 
@@ -21,7 +21,9 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 - Fields with the `inlineEditDisabled` parameter could be edited inline.
 - Dynamic logic `readOnly` and `readOnlySaved` rules were ignored in lists;
-  dynamic `required` rules were not applied to inline editors.
+  dynamic `required` rules were not applied to inline editors. The
+  attributes these rules read are loaded with the list even when they are
+  not displayed as columns.
 - Entities with `editDisabled` client definitions could be edited inline.
 
 ## [0.1.3] - 2026-08-27
@@ -64,5 +66,6 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Long-text cells not opening from their empty area.
 - Pipeline changes failing `pipelineStage.valid` backend validation.
 
+[0.2.0]: https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.2.0
 [0.1.3]: https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.3
 [0.1.2]: https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.2

@@ -4,7 +4,7 @@ Inline List Edit adds fast, focused field editing directly to EspoCRM record
 list views. It keeps EspoCRM's native navigation, validation and permissions
 while reducing the need to open a full record form for small updates.
 
-Current version: **0.1.3**. See the [release notes and download](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.3).
+Current version: **0.2.0**. See the [release notes and download](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.2.0).
 
 ## Features
 
@@ -82,8 +82,10 @@ Before displaying an edit control, it checks:
 - locked records.
 
 Dynamic logic `required` rules are applied to the inline editor as they are in
-the full form. A dynamic rule that cannot be evaluated locks the field rather
-than allowing an edit the full form might refuse.
+the full form. The attributes read by these rules are loaded with the list,
+even when they are not displayed as columns. A dynamic rule that cannot be
+evaluated locks the field rather than allowing an edit the full form might
+refuse.
 
 Every update is then sent through EspoCRM's native record API. Server-side ACL,
 field validation and business rules remain authoritative even if a frontend
@@ -131,8 +133,8 @@ unchanged; inline editing is attached to record list views.
 
 ## Installation
 
-1. Download `inline-list-edit-0.1.3.zip` from the
-  [v0.1.3 GitHub release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.3),
+1. Download `inline-list-edit-0.2.0.zip` from the
+  [v0.2.0 GitHub release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.2.0),
    or choose the asset from the [latest release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/latest).
 2. In EspoCRM, open **Administration → Extensions**.
 3. Upload the ZIP file.
@@ -161,7 +163,8 @@ four configuration keys are removed. CRM records are not modified or deleted.
   maintain a separate browser support matrix.
 
 The installable manifest declares the EspoCRM and PHP requirements above.
-Version 0.1.3 has been developed and tested against EspoCRM 10.0.3.
+Version 0.2.0 has been developed and tested against EspoCRM 10.0.3 and
+10.0.11.
 
 Because the extension integrates with native frontend field views, test it on
 a staging instance before upgrading EspoCRM to a new major version.
@@ -345,7 +348,7 @@ For a release:
 5. Monitor the **Actions** run. When it succeeds, the **Releases** page
    contains `inline-list-edit-<version>.zip` for download.
 
-The [v0.1.3 release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.1.3)
+The [v0.2.0 release](https://github.com/AlexisSantin/espocrm-inline-edit/releases/tag/v0.2.0)
 already includes its downloadable ZIP asset.
 
 ## Support
