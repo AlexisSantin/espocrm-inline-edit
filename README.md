@@ -365,8 +365,11 @@ for reproducible bugs and feature requests. When reporting a problem, include:
 
 ## License
 
+Copyright (C) 2026 Alexis SANTIN.
+
 Inline List Edit is free software licensed under the
-[GNU General Public License v3.0 or later](LICENSE).
+[GNU Affero General Public License v3.0 or later](LICENSE), the same license as
+EspoCRM. Versions up to 0.2.0 were released under GPL-3.0-or-later.
 
 ## Author
 

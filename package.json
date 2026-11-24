@@ -2,7 +2,7 @@
   "name": "espocrm-ext-inline-list-edit",
   "version": "0.2.0",
   "description": "Fast, ACL-aware inline editing for EspoCRM list views.",
-  "license": "GPL-3.0-or-later",
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "test": "node --test src/tests/*.test.js",
     "sa": "export PATH=\"$PWD/docker-bin:$PATH\"; vendor/bin/phpstan",
